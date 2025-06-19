@@ -83,6 +83,14 @@ namespace Chess
             // Place black knights (row 0, columns 1 and 6)
             SetPieceAt(1, 0, new Knight { Color = PieceColor.Black });
             SetPieceAt(6, 0, new Knight { Color = PieceColor.Black });
+
+            SetPieceAt(2, 7, new Bishop { Color = PieceColor.White });
+            SetPieceAt(5, 7, new Bishop { Color = PieceColor.White });
+
+            SetPieceAt(2, 0, new Bishop { Color = PieceColor.Black });
+            SetPieceAt(5, 0, new Bishop { Color = PieceColor.Black });
+
+
         }
     }
 }

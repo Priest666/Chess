@@ -90,7 +90,11 @@ namespace Chess
             SetPieceAt(2, 0, new Bishop { Color = PieceColor.Black });
             SetPieceAt(5, 0, new Bishop { Color = PieceColor.Black });
 
+            SetPieceAt(3, 7, new Queen { Color = PieceColor.White });
+            SetPieceAt(3, 0, new Queen { Color = PieceColor.Black });
 
+            SetPieceAt(4, 7, new King { Color = PieceColor.White });
+            SetPieceAt(4, 0, new King { Color = PieceColor.Black });
         }
     }
 }

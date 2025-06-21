@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Chess.Pieces
 {
-    internal class Bishop : Piece
+    internal class Queen : Piece
     {
-        public override string Name => "Bishop";
+        public override string Name => "Queen";
 
-        public override string Symbol => Color == PieceColor.White ? "♗" : "♝";
+        public override string Symbol => Color == PieceColor.White ? "♕" : "♛";
 
         public override List<Point> GetValidMoves(Board board, int x, int y)
         {
@@ -19,12 +19,15 @@ namespace Chess.Pieces
 
             int[][] directions = new int[][]
             {
+                new[] {1, 0}, 
+                new[] {-1, 0}, 
+                new[] {0, 1}, 
+                new[] {0, -1},
                 new[] { 1, 1 },
                 new[] { 1, -1 },
                 new[] { -1, -1 },
-                new[] { -1, 1 },
+                new[] { -1, 1 }
             };
-
 
             foreach (var dir in directions)
             {

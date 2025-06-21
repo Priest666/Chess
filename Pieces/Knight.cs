@@ -18,7 +18,7 @@ namespace Chess.Pieces
             var moves = new List<Point>();
 
             // All 8 possible L-shaped moves for a knight
-            int[][] offsets = new int[][]
+            int[][] directions = new int[][]
             {
                 new[] { 2, 1 }, new[] { 1, 2 },
                 new[] { -1, 2 }, new[] { -2, 1 },
@@ -26,10 +26,10 @@ namespace Chess.Pieces
                 new[] { 1, -2 }, new[] { 2, -1 }
             };
 
-            foreach (var offset in offsets)
+            foreach (var dir in directions)
             {
-                int newX = x + offset[0];
-                int newY = y + offset[1];
+                int newX = x + dir[0];
+                int newY = y + dir[1];
 
                 // Skip if out of bounds
                 if (!board.IsInBounds(newX, newY))

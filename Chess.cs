@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess.Pieces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,32 +8,64 @@ namespace Chess
 {
     public partial class Chess : Form
     {
-        private const int TileSize = 64; // Size of each tile on the board
-        private PictureBox[,] tileControls = new PictureBox[8, 8]; // 8x8 grid of UI tiles
-        private Board board = new Board(); 
-        private Point? selectedSquare = null; // The currently selected piece (if any)
-        private List<Point> highlightedMovesEmpty = new List<Point>(); // Valid non-capture moves
-        private List<Point> highlightedMovesCaptures = new List<Point>(); // Valid capture moves
-        private PieceColor currentTurn = PieceColor.White; 
+        private const int TileSize = 64;
+        private PictureBox[,] tileControls = new PictureBox[8, 8];
+        private Board board = new Board();
+        private Point? selectedSquare = null;
+        private List<Point> highlightedMovesEmpty = new List<Point>();
+        private List<Point> highlightedMovesCaptures = new List<Point>();
+        private PieceColor currentTurn = PieceColor.White;
+        private Label statusLabel = new Label();
 
         public Chess()
         {
             InitializeComponent();
+            InitializeStatusLabel();
+        }
+
+        private void InitializeStatusLabel()
+        {
+            statusLabel.Font = new Font("Arial", 12, FontStyle.Bold);
+            statusLabel.AutoSize = true;
+            statusLabel.Location = new Point(10, 10);
+            this.Controls.Add(statusLabel);
+        }
+
+        private void UpdateGameStatus()
+        {
+            if (board.IsCheckmate(currentTurn))
+            {
+                statusLabel.Text = $"CHECKMATE! {currentTurn} loses";
+                statusLabel.ForeColor = Color.Red;
+            }
+            else if (board.IsStalemate(currentTurn))
+            {
+                statusLabel.Text = "STALEMATE! Game drawn";
+                statusLabel.ForeColor = Color.Blue;
+            }
+            else if (board.IsInCheck(currentTurn))
+            {
+                statusLabel.Text = $"{currentTurn} is in CHECK";
+                statusLabel.ForeColor = Color.OrangeRed;
+            }
+            else
+            {
+                statusLabel.Text = $"{currentTurn}'s turn";
+                statusLabel.ForeColor = Color.Black;
+            }
         }
 
         private void Chess_Load(object sender, EventArgs e)
         {
-            board.InitializeStandardPosition(); 
-            CreateBoardUI(); 
-            DrawBoard(); 
+            board.InitializeStandardPosition();
+            CreateBoardUI();
+            DrawBoard();
+            UpdateGameStatus();
         }
 
-        // Create the 8x8 grid of PictureBoxes and place them centered on the form
         private void CreateBoardUI()
         {
             int boardPixelSize = 8 * TileSize;
-
-            // Calculate offset to center the board
             int offsetX = (this.ClientSize.Width - boardPixelSize) / 2;
             int offsetY = (this.ClientSize.Height - boardPixelSize) / 2;
 
@@ -46,41 +79,42 @@ namespace Chess
                         Height = TileSize,
                         Location = new Point(offsetX + x * TileSize, offsetY + y * TileSize),
                         BorderStyle = BorderStyle.FixedSingle,
-                        Tag = new Point(x, y) // Store board coordinates in the Tag
+                        Tag = new Point(x, y)
                     };
-
-                    tile.Click += Tile_Click; // Wire up click handler
+                    tile.Click += Tile_Click;
                     tileControls[x, y] = tile;
                     this.Controls.Add(tile);
                 }
             }
         }
 
-        // Draw the entire board and pieces
         private void DrawBoard()
         {
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
                 {
-                    var piece = board.GetPieceAt(x, y); // Get piece at this position
+                    var piece = board.GetPieceAt(x, y);
                     var tile = tileControls[x, y];
                     var pos = new Point(x, y);
 
-                    // Base color of the tile
                     Color baseColor = (x + y) % 2 == 0 ? Color.SandyBrown : Color.Brown;
 
-                    // Highlighting logic
                     if (selectedSquare.HasValue && selectedSquare.Value == pos)
-                        tile.BackColor = Color.Gold; // Selected piece
+                        tile.BackColor = Color.Gold;
                     else if (highlightedMovesCaptures.Contains(pos))
-                        tile.BackColor = Color.Red; // Valid capture
+                        tile.BackColor = Color.Red;
                     else if (highlightedMovesEmpty.Contains(pos))
-                        tile.BackColor = Color.Green; // Valid non-capture move
+                        tile.BackColor = Color.Green;
                     else
-                        tile.BackColor = baseColor; // Default color
+                        tile.BackColor = baseColor;
 
-                    // Draw the piece symbol
+                    // Highlight king if in check
+                    if (piece is King && board.IsInCheck(piece.Color))
+                    {
+                        tile.BackColor = Color.Orange;
+                    }
+
                     Bitmap bmp = new Bitmap(TileSize, TileSize);
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
@@ -107,36 +141,23 @@ namespace Chess
             }
         }
 
-        // Handle when a tile is clicked
         private void Tile_Click(object sender, EventArgs e)
         {
+            if (board.IsCheckmate(currentTurn) || board.IsStalemate(currentTurn))
+                return;
+
             var tile = sender as PictureBox;
             var clickedPos = (Point)tile.Tag;
             var clickedPiece = board.GetPieceAt(clickedPos.X, clickedPos.Y);
 
-            // First click: select a piece
             if (selectedSquare == null)
             {
                 if (clickedPiece != null && clickedPiece.Color == currentTurn)
                 {
                     selectedSquare = clickedPos;
-
-                    // Get possible moves for this piece
-                    var allMoves = clickedPiece.GetValidMoves(board, clickedPos.X, clickedPos.Y);
-                    highlightedMovesEmpty.Clear();
-                    highlightedMovesCaptures.Clear();
-
-                    foreach (var move in allMoves)
-                    {
-                        var targetPiece = board.GetPieceAt(move.X, move.Y);
-                        if (targetPiece == null)
-                            highlightedMovesEmpty.Add(move); // Empty move
-                        else if (targetPiece.Color != clickedPiece.Color)
-                            highlightedMovesCaptures.Add(move); // Capture
-                    }
+                    UpdateHighlights(clickedPos, clickedPiece);
                 }
             }
-            // Second click: attempt to move
             else
             {
                 Point from = selectedSquare.Value;
@@ -146,22 +167,40 @@ namespace Chess
                 {
                     var validMoves = selectedPiece.GetValidMoves(board, from.X, from.Y);
 
-                    if (validMoves.Contains(clickedPos))
+                    if (validMoves.Contains(clickedPos) && !board.WouldBeInCheckAfterMove(currentTurn, from.X, from.Y, clickedPos.X, clickedPos.Y))
                     {
-                        // Move piece and switch turn
                         board.MovePiece(from.X, from.Y, clickedPos.X, clickedPos.Y);
                         currentTurn = currentTurn == PieceColor.White ? PieceColor.Black : PieceColor.White;
                     }
                 }
 
-                // Clear selection and highlights
                 selectedSquare = null;
                 highlightedMovesEmpty.Clear();
                 highlightedMovesCaptures.Clear();
             }
 
-            // Redraw the board with updated state
             DrawBoard();
+            UpdateGameStatus();
+        }
+
+        private void UpdateHighlights(Point position, Piece piece)
+        {
+            highlightedMovesEmpty.Clear();
+            highlightedMovesCaptures.Clear();
+
+            var allMoves = piece.GetValidMoves(board, position.X, position.Y);
+
+            foreach (var move in allMoves)
+            {
+                if (!board.WouldBeInCheckAfterMove(currentTurn, position.X, position.Y, move.X, move.Y))
+                {
+                    var targetPiece = board.GetPieceAt(move.X, move.Y);
+                    if (targetPiece == null)
+                        highlightedMovesEmpty.Add(move);
+                    else if (targetPiece.Color != piece.Color)
+                        highlightedMovesCaptures.Add(move);
+                }
+            }
         }
     }
 }

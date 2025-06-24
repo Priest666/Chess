@@ -98,15 +98,5 @@ namespace Chess.Pieces
                 moves.Add(new Point(castleX, kingY));   
             }
         }
-
-
-        public override Piece Clone()
-        {
-            return new King
-            {
-                Color = this.Color,
-                HasMoved = this.HasMoved,
-            };
-        }
     }
 }

@@ -104,14 +104,7 @@ namespace Chess
             SetPieceAt(fromX, fromY, null);
 
             bool isInCheck = false;
-            try
-            {
-                isInCheck = IsInCheck(color);
-            }
-            catch (StackOverflowException)
-            {
-                Console.WriteLine("Stack overflow detected in WouldBeInCheckAfterMove");
-            }
+            isInCheck = IsInCheck(color);
 
             // Undo the temporary move
             SetPieceAt(fromX, fromY, originalPiece);
@@ -148,7 +141,6 @@ namespace Chess
         }
 
         //Checks if the specified color is in checkmate.
-   
         public bool IsCheckmate(PieceColor color)
         {
             if (!IsInCheck(color)) return false;
@@ -166,8 +158,7 @@ namespace Chess
             return true;
         }
 
-        //Checks if the specified color is in stalemate.
-     
+        //Checks if the specified color is in stalemate.   
         public bool IsStalemate(PieceColor color)
         {
             if (IsInCheck(color)) return false;
@@ -186,15 +177,9 @@ namespace Chess
         //Sets up the standard chess starting position.
         public void InitializeStandardPosition()
         {
-            // Place white pawns (row 6)
             for (int x = 0; x < 8; x++)
             {
                 SetPieceAt(x, 6, new Pawn { Color = PieceColor.White });
-            }
-
-            // Place black pawns (row 1)
-            for (int x = 0; x < 8; x++)
-            {
                 SetPieceAt(x, 1, new Pawn { Color = PieceColor.Black });
             }
 

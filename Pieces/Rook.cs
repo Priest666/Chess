@@ -9,9 +9,6 @@ namespace Chess.Pieces
 {
     internal class Rook : Piece
     {
-
-        public bool HasMoved { get; set; }
-
         public override string Name => "Rook";
 
         public override string Symbol => Color == PieceColor.White ? "♖" : "♜";

@@ -25,11 +25,6 @@ namespace Chess
 
         // Returns a list of valid moves from (x, y) on a given board
         public abstract List<Point> GetValidMoves(Board board, int x, int y);
-
-        public override string ToString()
-        {
-            return Symbol;
-        }
     }
 }
 

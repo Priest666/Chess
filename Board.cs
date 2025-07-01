@@ -35,18 +35,39 @@ namespace Chess
                 squares[x, y] = piece;
             }
         }
-    
+
         //Moves a piece from one square to another.    
         public void MovePiece(int fromX, int fromY, int toX, int toY)
         {
-            if (!IsInBounds(fromX, fromY) || !IsInBounds(toX, toY))
+            if (!IsInBounds(fromX, fromY) || !IsInBounds(toX, toY)) return;
+
+            Piece movingPiece = GetPieceAt(fromX, fromY);
+
+            // Hantera rockad
+            if (movingPiece is King king && Math.Abs(toX - fromX) == 2)
             {
-                return;
+                int y = fromY;
+                if (toX == 6)
+                {
+                    var rook = GetPieceAt(7, y);
+                    SetPieceAt(5, y, rook);
+                    SetPieceAt(7, y, null);
+                    if (rook != null) rook.HasMoved = true;
+                }
+                else if (toX == 2)
+                {
+                    var rook = GetPieceAt(0, y);
+                    SetPieceAt(3, y, rook);
+                    SetPieceAt(0, y, null);
+                    if (rook != null) rook.HasMoved = true;
+                }
             }
 
-            Piece movingPiece = squares[fromX, fromY];
-            squares[toX, toY] = movingPiece;
-            squares[fromX, fromY] = null;           
+            SetPieceAt(toX, toY, movingPiece);
+            SetPieceAt(fromX, fromY, null);
+
+            if (movingPiece != null)
+                movingPiece.HasMoved = true;
         }
 
         //Checks if the given coordinates are within the bounds of the board.    
@@ -170,6 +191,42 @@ namespace Chess
                     !WouldBeInCheckAfterMove(color, pos.X, pos.Y, move.X, move.Y)))
                     return false;
             }
+            return true;
+        }
+
+        public bool CanCastleKingSide(PieceColor color)
+        {
+            int y = color == PieceColor.White ? 7 : 0;
+            var king = GetPieceAt(4, y) as King;
+            var rook = GetPieceAt(7, y) as Rook;
+
+            if (king == null || rook == null || king.HasMoved || rook.HasMoved) 
+                return false;
+            if (GetPieceAt(5, y) != null || GetPieceAt(6, y) != null) 
+                return false;
+            if (WouldBeInCheckAfterMove(color, 4, y, 5, y))
+                return false;
+            if (WouldBeInCheckAfterMove(color, 4, y, 6, y))
+                return false;
+
+            return true;
+        }
+
+        public bool CanCastleQueenSide(PieceColor color)
+        {
+            int y = color == PieceColor.White ? 7 : 0;
+            var king = GetPieceAt(4, y) as King;
+            var rook = GetPieceAt(0, y) as Rook;
+
+            if (king == null || rook == null || king.HasMoved || rook.HasMoved)
+                return false;
+            if (GetPieceAt(1, y) != null || GetPieceAt(2, y) != null || GetPieceAt(3, y) != null)
+                return false;
+            if (WouldBeInCheckAfterMove(color, 4, y, 3, y))
+                return false;
+            if (WouldBeInCheckAfterMove(color, 4, y, 2, y))
+                return false;
+
             return true;
         }
 

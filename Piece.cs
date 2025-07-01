@@ -17,6 +17,8 @@ namespace Chess
     {
         public PieceColor Color { get; set; }
 
+        public virtual bool HasMoved { get; set; } = false;
+
         public abstract string Name { get; }
 
         public abstract string Symbol { get; }

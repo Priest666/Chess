@@ -46,6 +46,18 @@ namespace Chess.Pieces
                 }
             }          
 
+            if (!HasMoved && !board.IsInCheck(Color))
+            {
+                if (board.CanCastleKingSide(Color))
+                {
+                    moves.Add(new Point(x + 2, y));
+                }
+                if (board.CanCastleQueenSide(Color))
+                {
+                    moves.Add(new Point(x - 2, y));
+                }
+            }
+
             return moves.Where(move =>
                 !board.WouldBeInCheckAfterMove(Color, x, y, move.X, move.Y)).ToList();
         }      

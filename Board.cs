@@ -17,6 +17,8 @@ namespace Chess
         public int Rows => 8;
         public int Columns => 8;
 
+        public Point? EnPassantTarget { get; set; } = null;
+
         //Gets the piece at the specified coordinates.   
         public Piece GetPieceAt(int x, int y)
         {
@@ -43,8 +45,8 @@ namespace Chess
 
             Piece movingPiece = GetPieceAt(fromX, fromY);
 
-            // Hantera rockad
-            if (movingPiece is King king && Math.Abs(toX - fromX) == 2)
+            // Rockad
+            if (movingPiece is King && Math.Abs(toX - fromX) == 2)
             {
                 int y = fromY;
                 if (toX == 6)
@@ -60,6 +62,40 @@ namespace Chess
                     SetPieceAt(3, y, rook);
                     SetPieceAt(0, y, null);
                     if (rook != null) rook.HasMoved = true;
+                }
+            }
+
+            // En passant
+            if (movingPiece is Pawn pawn)
+            {
+                int direction = pawn.Color == PieceColor.White ? -1 : 1;
+
+                if (EnPassantTarget.HasValue && toX == EnPassantTarget.Value.X && toY == EnPassantTarget.Value.Y)
+                {
+                    SetPieceAt(toX, toY - direction, null);
+                }
+
+                if (Math.Abs(toY - fromY) == 2)
+                {
+                    EnPassantTarget = new Point(toX, fromY + direction);
+                }
+                else
+                {
+                    EnPassantTarget = null;
+                }
+            }
+            else
+            {
+                EnPassantTarget = null;
+            }
+
+            // Promotion
+            if (movingPiece is Pawn)
+            {
+                int promotionRow = movingPiece.Color == PieceColor.White ? 0 : 7;
+                if (toY == promotionRow)
+                {
+                    SetPieceAt(toX, toY, new Queen { Color = movingPiece.Color });
                 }
             }
 

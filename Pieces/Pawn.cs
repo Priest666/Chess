@@ -49,6 +49,15 @@ namespace Chess.Pieces
                 }
             }
 
+            if (board.EnPassantTarget.HasValue)
+            {
+                var ep = board.EnPassantTarget.Value;
+                if (ep.Y == oneStepY && Math.Abs(ep.X - x) == 1)
+                {
+                    moves.Add(ep);
+                }
+            }
+
             return moves;
         }
     }

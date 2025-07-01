@@ -73,7 +73,6 @@ namespace Chess
         }
 
         //Gets all positions containing pieces of the specified color.
-
         public List<Point> GetAllPiecesOfColor(PieceColor color)
         {
             var list = new List<Point>();
@@ -103,7 +102,7 @@ namespace Chess
             SetPieceAt(toX, toY, originalPiece);
             SetPieceAt(fromX, fromY, null);
 
-            bool isInCheck = false;
+            bool isInCheck;
             isInCheck = IsInCheck(color);
 
             // Undo the temporary move

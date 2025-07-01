@@ -11,7 +11,7 @@ namespace Chess.Pieces
     {
         public override string Name => "Bishop";
 
-        public override string Symbol => Color == PieceColor.White ? "♗" : "♝";
+        public override string Symbol => Color == PieceColor.White ? "♝" : "♝";
 
         public override List<Point> GetValidMoves(Board board, int x, int y)
         {

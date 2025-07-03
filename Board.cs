@@ -11,7 +11,7 @@ namespace Chess
     internal class Board
     {
         // 8x8 grid: each square can hold a Piece or be empty (null)
-        private Piece[,] squares = new Piece[8, 8];
+        private readonly Piece[,] squares = new Piece[8, 8];
 
         // Properties for board dimensions
         public int Rows => 8;

@@ -9,13 +9,13 @@ namespace Chess
     public partial class Chess : Form
     {
         private const int TileSize = 64;
-        private PictureBox[,] tileControls = new PictureBox[8, 8];
-        private Board board = new Board();
+        private readonly PictureBox[,] tileControls = new PictureBox[8, 8];
+        private readonly Board board = new Board();
         private Point? selectedSquare = null;
-        private List<Point> highlightedMovesEmpty = new List<Point>();
-        private List<Point> highlightedMovesCaptures = new List<Point>();
+        private readonly List<Point> highlightedMovesEmpty = new List<Point>();
+        private readonly List<Point> highlightedMovesCaptures = new List<Point>();
         private PieceColor currentTurn = PieceColor.White;
-        private Label statusLabel = new Label();
+        private readonly Label statusLabel = new Label();
 
         public Chess()
         {

@@ -8,14 +8,14 @@ namespace Chess
 {
     public partial class Chess : Form
     {
-        private const int TileSize = 64;
-        private readonly PictureBox[,] tileControls = new PictureBox[8, 8];
-        private readonly Board board = new Board();
-        private Point? selectedSquare = null;
-        private readonly List<Point> highlightedMovesEmpty = new List<Point>();
-        private readonly List<Point> highlightedMovesCaptures = new List<Point>();
-        private PieceColor currentTurn = PieceColor.White;
-        private readonly Label statusLabel = new Label();
+        private const int TileSize = 64; // Size of each square on the board
+        private readonly PictureBox[,] tileControls = new PictureBox[8, 8]; // UI elements for board tiles
+        private readonly Board board = new Board(); // Logical board representation
+        private Point? selectedSquare = null; // Currently selected square (if any)
+        private readonly List<Point> highlightedMovesEmpty = new List<Point>(); // Valid non-capture moves
+        private readonly List<Point> highlightedMovesCaptures = new List<Point>(); // Valid capture moves
+        private PieceColor currentTurn = PieceColor.White; // Tracks whose turn it is
+        private readonly Label statusLabel = new Label(); // Label to display game status (e.g., check, checkmate)
 
         public Chess()
         {
@@ -23,6 +23,7 @@ namespace Chess
             InitializeStatusLabel();
         }
 
+        // Sets up the label that displays the current game status
         private void InitializeStatusLabel()
         {
             statusLabel.Font = new Font("Arial", 12, FontStyle.Bold);
@@ -31,6 +32,7 @@ namespace Chess
             this.Controls.Add(statusLabel);
         }
 
+        // Updates the status label depending on the current board state
         private void UpdateGameStatus()
         {
             if (board.IsCheckmate(currentTurn))
@@ -55,14 +57,16 @@ namespace Chess
             }
         }
 
+        // Event triggered when the form loads
         private void Chess_Load(object sender, EventArgs e)
         {
-            board.InitializeStandardPosition();
-            CreateBoardUI();
-            DrawBoard();
-            UpdateGameStatus();
+            board.InitializeStandardPosition(); // Place pieces in starting positions
+            CreateBoardUI(); // Generate tile UI
+            DrawBoard(); // Draw initial board
+            UpdateGameStatus(); // Show initial game state
         }
 
+        // Creates the 8x8 chessboard UI using PictureBoxes
         private void CreateBoardUI()
         {
             int boardPixelSize = 8 * TileSize;
@@ -79,7 +83,7 @@ namespace Chess
                         Height = TileSize,
                         Location = new Point(offsetX + x * TileSize, offsetY + y * TileSize),
                         BorderStyle = BorderStyle.FixedSingle,
-                        Tag = new Point(x, y)
+                        Tag = new Point(x, y) // Store position for easy access
                     };
                     tile.Click += Tile_Click;
                     tileControls[x, y] = tile;
@@ -88,6 +92,7 @@ namespace Chess
             }
         }
 
+        // Renders the board state visually
         private void DrawBoard()
         {
             for (int x = 0; x < 8; x++)
@@ -98,23 +103,26 @@ namespace Chess
                     var tile = tileControls[x, y];
                     var pos = new Point(x, y);
 
+                    // Set base tile color
                     Color baseColor = (x + y) % 2 == 0 ? Color.SandyBrown : Color.Brown;
 
+                    // Override color for highlights
                     if (selectedSquare.HasValue && selectedSquare.Value == pos)
-                        tile.BackColor = Color.Gold;
+                        tile.BackColor = Color.Gold; // Selected tile
                     else if (highlightedMovesCaptures.Contains(pos))
-                        tile.BackColor = Color.Red;
+                        tile.BackColor = Color.Red; // Valid capture move
                     else if (highlightedMovesEmpty.Contains(pos))
-                        tile.BackColor = Color.Green;
+                        tile.BackColor = Color.Green; // Valid empty move
                     else
                         tile.BackColor = baseColor;
 
-                    // Highlight king if in check
+                    // Highlight the king if in check
                     if (piece is King && board.IsInCheck(piece.Color))
                     {
                         tile.BackColor = Color.Orange;
                     }
 
+                    // Draw the piece symbol
                     Bitmap bmp = new Bitmap(TileSize, TileSize);
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
@@ -141,8 +149,10 @@ namespace Chess
             }
         }
 
+        // Handles tile click events for selecting/moving pieces
         private void Tile_Click(object sender, EventArgs e)
         {
+            // If game is over, ignore clicks
             if (board.IsCheckmate(currentTurn) || board.IsStalemate(currentTurn))
                 return;
 
@@ -152,6 +162,7 @@ namespace Chess
 
             if (selectedSquare == null)
             {
+                // Select piece if it's the player's own
                 if (clickedPiece != null && clickedPiece.Color == currentTurn)
                 {
                     selectedSquare = clickedPos;
@@ -160,6 +171,7 @@ namespace Chess
             }
             else
             {
+                // Try to move selected piece to new position
                 Point from = selectedSquare.Value;
                 Piece selectedPiece = board.GetPieceAt(from.X, from.Y);
 
@@ -167,22 +179,26 @@ namespace Chess
                 {
                     var validMoves = selectedPiece.GetValidMoves(board, from.X, from.Y);
 
-                    if (validMoves.Contains(clickedPos) && !board.WouldBeInCheckAfterMove(currentTurn, from.X, from.Y, clickedPos.X, clickedPos.Y))
+                    // Check if clicked target is valid and doesn’t result in self-check
+                    if (validMoves.Contains(clickedPos) &&
+                        !board.WouldBeInCheckAfterMove(currentTurn, from.X, from.Y, clickedPos.X, clickedPos.Y))
                     {
                         board.MovePiece(from.X, from.Y, clickedPos.X, clickedPos.Y);
                         currentTurn = currentTurn == PieceColor.White ? PieceColor.Black : PieceColor.White;
                     }
                 }
 
+                // Clear selection and highlights
                 selectedSquare = null;
                 highlightedMovesEmpty.Clear();
                 highlightedMovesCaptures.Clear();
             }
 
-            DrawBoard();
-            UpdateGameStatus();
+            DrawBoard(); // Refresh the board
+            UpdateGameStatus(); // Refresh status label
         }
 
+        // Highlights all valid moves for the selected piece
         private void UpdateHighlights(Point position, Piece piece)
         {
             highlightedMovesEmpty.Clear();
@@ -192,6 +208,7 @@ namespace Chess
 
             foreach (var move in allMoves)
             {
+                // Only highlight moves that don’t leave the king in check
                 if (!board.WouldBeInCheckAfterMove(currentTurn, position.X, position.Y, move.X, move.Y))
                 {
                     var targetPiece = board.GetPieceAt(move.X, move.Y);

@@ -89,7 +89,12 @@ namespace Chess
                 EnPassantTarget = null;
             }
 
-            // Promotion
+            SetPieceAt(toX, toY, movingPiece);
+            SetPieceAt(fromX, fromY, null);
+
+            if (movingPiece != null)
+                movingPiece.HasMoved = true;
+
             if (movingPiece is Pawn)
             {
                 int promotionRow = movingPiece.Color == PieceColor.White ? 0 : 7;
@@ -99,11 +104,6 @@ namespace Chess
                 }
             }
 
-            SetPieceAt(toX, toY, movingPiece);
-            SetPieceAt(fromX, fromY, null);
-
-            if (movingPiece != null)
-                movingPiece.HasMoved = true;
         }
 
         //Checks if the given coordinates are within the bounds of the board.    
